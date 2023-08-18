@@ -1,46 +1,134 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, Alert, ImageBackground ,ActivityIndicator} from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { mathtoken } from '../Token'
-import typer from '../type'
+import { data, mathtoken } from '../Token'
+import typer, { setType } from '../type'
+import { useDispatch, useSelector } from 'react-redux'
+
+
 
 
 const Test = () => {
   const [data,setdata]=useState([])
-  const [from,setfrom]=useState('')
-  const [trr,settr]=useState('')
+  const [trr,settr]=useState(null)
+  const [arr,setarr]=useState('')
   const [i,seti]=useState(0)
-  const uri=`https://api.mymemory.translated.net/get?q=${from}&langpair=en|uz`
+  const [ball,setball]=useState(0)
+  const {typer}=useSelector((e)=>e.typer)
+  const distpatch = useDispatch()
+
+
   useEffect(()=>{
     
-    fetch(`${mathtoken}${19}&type=boolean`)
+    fetch(`${mathtoken}${typer}&type=boolean`)
     .then(r=>r.json())
-    .then(d=>{setdata(d)})
-    console.log("hhhhhhhhh-----",);
+    .then(d=>{
+      console.log(d)
+      setdata(d)
+    })
   },[])
+  
+
+
   function tr(){
-    // setfrom(data.results[i].question)
+    if(data.length == 0) return ;
+    settr(null)
+    console.log(data.results[i]?.question);
+   
+    const uri=`https://api.mymemory.translated.net/get?q=${data.results[i]?.question}&langpair=en|uz`
+    function encode_utf8(s) {
+      return unescape(encodeURIComponent(s));
+    }
+    console.log(encode_utf8(uri))
+    console.log(uri);
     fetch(uri)
     .then(r=>r.json())
-    .then(d=>console.log(d))
-
+    .then(d=>{
+      console.log(d);
+     
+      if(d.matches!=""){
+      
+        const arr2=d.matches[0].translation.split('&#39;'|| " &#039;")
+        for (let i = 0; i < arr2.length; i++) {
+          if(i==0){
+            settr(arr2[0])
+            
+          }else{
+            
+            settr(prevState=>prevState+"'"+arr2[i])
+            
+          }
+        }
+        
+        
+      }else{
+        settr(data.results[i].question)
+      }
+    })
+    
+   
   }
+
+  useEffect(tr , [i, data])
+
+
+function onInputt(top){
+  seti(prevState => prevState + 1)
+  if(data.results[i]?.correct_answer==top){
+    Alert.alert("Barakalla")
+    setball(p=>p+1)
+ 
+  }else{
+    Alert.alert("Xato")
+    
+  }
+
+  if(i==9){
+    ttt()
+  }
+
+}
+function ttt(){
+  settr('')
+  Alert.alert("Test yakunlandi. Sizning balingiz: "+ball)
+  distpatch(setType(0))
+}
+
+
+
+
   // {data.results[0]}
   return (
-    <View style={{flex:1,marginTop:50,display:"flex",justifyContent:"center",alignItems:"center"}}>
+    <ImageBackground style={{flex:1,marginTop:20}} source={{uri:"https:unsplash.it/300/600?random"}}>
 
-    <View>
-      <Text style={{fontSize:25}}></Text>
+    <View style={{flex:1,marginTop:50,display:"flex",justifyContent:"center",alignItems:"center"}}>
+    <View style={{width:"auto",height:"auto",backgroundColor:"green",borderRadius:5}}>
+      <Text style={{fontSize:26}}>{i+1}/10</Text>
+    </View>
+
+    <View style={{width:300,height:"auto",backgroundColor:"#ffffaf",marginTop:10,marginBottom:10}}>
+      <Text style={{fontSize:23,margin:10,textAlign:"center"}}>{trr?trr:<ActivityIndicator size="large" color="#00ff00" />}</Text>
     </View>
     <View>
-      <TouchableOpacity style={{width:200,height:40,backgroundColor:"blue",borderRadius:7,borderWidth:2}}>
-        <Text style={{fontSize:25}}>To'gri</Text>
+      <TouchableOpacity disabled={!trr} onPress={()=>onInputt("True")} style={{width:250,height:50,backgroundColor:"blue",borderRadius:7,borderWidth:2}}>
+        <Text style={{fontSize:35,color:"green",textAlign:"center"}}>To'gri</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={{width:200,height:40,backgroundColor:"blue",borderRadius:7,borderWidth:2,marginTop:10}}>
-        <Text style={{fontSize:25}}>Noto'gri</Text>
+      <TouchableOpacity disabled={!trr} onPress={()=>onInputt("False")} style={{width:250,height:50,backgroundColor:"blue",borderRadius:7,borderWidth:2,marginTop:10}}>
+        <Text style={{fontSize:35,textAlign:"center",color:"red"}}>Noto'gri</Text>
+      </TouchableOpacity>
+      <TouchableOpacity disabled={!trr} onPress={ttt} style={{width:250,height:40,backgroundColor:"blue",borderRadius:7,borderWidth:2,marginTop:30}}>
+        <Text style={{fontSize:25,textAlign:"center",color:"green"}}>Testni yakunlash</Text>
       </TouchableOpacity>
     </View>
+
     </View>
+    </ImageBackground>
   )
 }
+
+
+
+
+// &#39; = '
+// &#039;= '
 
 export default Test

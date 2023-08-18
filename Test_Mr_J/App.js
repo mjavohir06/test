@@ -1,20 +1,31 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import Bottomtab from './asosiy/Bottomtab';
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import { store } from './store';
-import typer from './type';
+
 import Test from './components/Test';
 
-export default function App() {
-  console.log(typer);
+ function App1() {
+  const typer=useSelector((e)=>e.typer)
+ 
   return (
-    <Provider store={store}>
-      {typer==0? <Bottomtab/>:<Test/>}
-      
-    </Provider>
+    <>
+      {typer.typer==0? <Bottomtab/>:<Test/>}
+    </>
   );
 }
+
+
+export default function App() {
+
+  return (
+    <Provider store={store}>
+      <App1 />
+    </Provider>
+  )
+}
+
 
 const styles = StyleSheet.create({
   
